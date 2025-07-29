@@ -1,0 +1,141 @@
+# Microsoft SQL Server 2022 – Fundamentos
+
+CREATE DATABASE Frutally;
+GO
+
+CREATE TABLE Produtos (
+    id INT PRIMARY KEY,
+    nome VARCHAR(100),
+    preco DECIMAL(10, 2)
+);
+
+-- Criação de outras tabelas
+
+CREATE TABLE Vendedores (
+    id INT PRIMARY KEY,
+    nome VARCHAR(100),
+    email VARCHAR(100)
+);
+
+CREATE TABLE Vendas (
+    id INT PRIMARY KEY,
+    produto_id INT,
+    vendedor_id INT,
+    quantidade INT,
+    data_venda DATE,
+    FOREIGN KEY (produto_id) REFERENCES Produtos(id),
+    FOREIGN KEY (vendedor_id) REFERENCES Vendedores(id)
+);
+
+-- Tipos de dados utilizados: VARCHAR, INT, DECIMAL, DATE
+-- Relações entre tabelas usando FOREIGN KEY
+-- Modificação de tabelas com ALTER TABLE
+-- Exclusão com DROP TABLE e DROP DATABASE
+
+
+-- Inserção de dados nas tabelas
+
+INSERT INTO Produtos (id, nome, preco) VALUES
+(1, 'Banana', 3.50),
+(2, 'Maçã', 4.20),
+(3, 'Abacaxi', 6.00);
+
+INSERT INTO Vendedores (id, nome, email) VALUES
+(1, 'Carlos Silva', 'carlos@empresa.com'),
+(2, 'Ana Souza', 'ana@empresa.com');
+
+INSERT INTO Vendas (id, produto_id, vendedor_id, quantidade, data_venda) VALUES
+(1, 1, 1, 10, '2025-07-01'),
+(2, 2, 2, 5, '2025-07-02'),
+(3, 3, 1, 8, '2025-07-03');
+
+
+-- Consulta de dados (SELECT)
+
+-- Selecionar colunas específicas
+SELECT nome, preco FROM Produtos;
+
+-- Usar alias (apelido)
+SELECT nome AS Produto, preco AS Valor FROM Produtos;
+
+-- Eliminar duplicatas
+SELECT DISTINCT vendedor_id FROM Vendas;
+
+-- Filtros com WHERE
+SELECT * FROM Produtos WHERE preco > 4.00;
+
+-- Filtros com operadores compostos
+SELECT * FROM Produtos WHERE preco > 4.00 AND nome LIKE 'A%';
+
+-- Consultar por datas
+SELECT * FROM Vendas WHERE data_venda >= '2025-07-02';
+
+-- IN e BETWEEN
+SELECT * FROM Produtos WHERE preco BETWEEN 4.00 AND 6.00;
+
+-- LIKE e NOT LIKE
+SELECT * FROM Produtos WHERE nome LIKE '%ç%';
+
+
+-- Atualização e exclusão de dados
+
+-- Atualizar valor de um produto
+UPDATE Produtos SET preco = 4.00 WHERE nome = 'Banana';
+
+-- Deletar produto com valor muito baixo
+DELETE FROM Produtos WHERE preco < 2.00;
+
+-- Sempre usar WHERE para evitar alterações em massa!
+
+
+-- Junções básicas (JOIN)
+
+-- Consultar vendas com nome do produto e vendedor
+SELECT
+  Vendas.id,
+  Produtos.nome AS Produto,
+  Vendedores.nome AS Vendedor,
+  Vendas.quantidade,
+  Vendas.data_venda
+FROM Vendas
+JOIN Produtos ON Vendas.produto_id = Produtos.id
+JOIN Vendedores ON Vendas.vendedor_id = Vendedores.id;
+
+
+-- Agregações básicas
+
+-- Soma de quantidade vendida por produto
+SELECT produto_id, SUM(quantidade) AS TotalVendido
+FROM Vendas
+GROUP BY produto_id;
+
+-- Média de preço dos produtos
+SELECT AVG(preco) AS MediaPreco FROM Produtos;
+
+
+-- Ordenação de resultados
+
+SELECT * FROM Produtos ORDER BY preco DESC;
+
+-- Limitar retorno (para análise rápida)
+SELECT TOP 2 * FROM Produtos ORDER BY preco DESC;
+
+-- Contagem de registros
+SELECT COUNT(*) FROM Vendedores;
+
+
+-- Exclusão de tabelas
+
+DROP TABLE Vendas;
+DROP TABLE Produtos;
+DROP TABLE Vendedores;
+
+-- Exclusão de banco
+DROP DATABASE Frutally;
+
+
+-- Observações:
+-- Todos os testes foram realizados no SQL Server Management Studio (SSMS)
+-- Comandos organizados por etapas do CRUD (Create, Read, Update, Delete)
+-- Projeto baseado na simulação de um sistema de vendas simples (Frutally)
+-- Utilização de boas práticas: normalização, integridade referencial e filtros seguros
