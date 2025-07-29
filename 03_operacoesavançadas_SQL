@@ -1,0 +1,151 @@
+# Microsoft SQL Server 2022 – Curso 2: Operações Avançadas com SQL
+
+-- Junções com múltiplas tabelas para cruzamento de dados
+
+SELECT
+  v.id AS VendaID,
+  p.nome AS Produto,
+  p.preco,
+  v.quantidade,
+  v.data_venda,
+  ve.nome AS Vendedor
+FROM Vendas v
+JOIN Produtos p ON v.produto_id = p.id
+JOIN Vendedores ve ON v.vendedor_id = ve.id
+WHERE p.preco > 5.00;
+
+-- JOIN com três tabelas (Produtos, Vendas, Vendedores)
+-- Filtrando produtos acima de um valor
+
+
+-- CASE para criar colunas condicionais
+
+SELECT
+  nome,
+  preco,
+  CASE
+    WHEN preco >= 6 THEN 'Caro'
+    WHEN preco BETWEEN 4 AND 5.99 THEN 'Médio'
+    ELSE 'Barato'
+  END AS FaixaPreco
+FROM Produtos;
+
+-- Uso de CASE para classificar produtos por faixa de preço
+
+
+-- CTE (Common Table Expression) para subconsulta reutilizável
+
+WITH VendasTotais AS (
+  SELECT produto_id, SUM(quantidade) AS TotalVendido
+  FROM Vendas
+  GROUP BY produto_id
+)
+SELECT p.nome, vt.TotalVendido
+FROM VendasTotais vt
+JOIN Produtos p ON vt.produto_id = p.id;
+
+-- CTE usada para agrupar antes de uma JOIN
+
+
+-- MERGE: sincronização de tabelas com base em uma comparação
+
+MERGE INTO Produtos AS destino
+USING (SELECT 3 AS id, 'Abacaxi' AS nome, 5.90 AS preco, 80 AS estoque) AS origem
+ON destino.id = origem.id
+WHEN MATCHED THEN
+  UPDATE SET preco = origem.preco, estoque = origem.estoque
+WHEN NOT MATCHED THEN
+  INSERT (id, nome, preco, estoque)
+  VALUES (origem.id, origem.nome, origem.preco, origem.estoque);
+
+-- MERGE atualiza se o produto existir, insere se não existir
+
+
+-- Subqueries em SELECT
+
+SELECT nome, preco
+FROM Produtos
+WHERE preco > (
+  SELECT AVG(preco) FROM Produtos
+);
+
+-- Retorna produtos acima da média de preço
+
+
+-- Subqueries com EXISTS
+
+SELECT nome
+FROM Vendedores
+WHERE EXISTS (
+  SELECT 1 FROM Vendas WHERE vendedor_id = Vendedores.id
+);
+
+-- Retorna apenas vendedores que fizeram vendas
+
+
+-- Views para consultas reutilizáveis
+
+CREATE VIEW vw_ResumoVendas AS
+SELECT
+  v.id AS VendaID,
+  p.nome AS Produto,
+  ve.nome AS Vendedor,
+  v.quantidade,
+  v.data_venda
+FROM Vendas v
+JOIN Produtos p ON v.produto_id = p.id
+JOIN Vendedores ve ON v.vendedor_id = ve.id;
+
+-- Consultar view
+
+SELECT * FROM vw_ResumoVendas;
+
+
+-- Funções de agregação combinadas com HAVING
+
+SELECT produto_id, SUM(quantidade) AS Total
+FROM Vendas
+GROUP BY produto_id
+HAVING SUM(quantidade) > 10;
+
+-- HAVING usado após GROUP BY para filtrar agregados
+
+
+-- Ordenações combinadas
+
+SELECT nome, preco
+FROM Produtos
+ORDER BY preco DESC, nome ASC;
+
+-- Ordena por múltiplas colunas
+
+
+-- Transações e controle de consistência
+
+BEGIN TRANSACTION;
+
+UPDATE Produtos SET estoque = estoque - 5 WHERE id = 1;
+INSERT INTO Vendas (id, produto_id, vendedor_id, quantidade, data_venda)
+VALUES (4, 1, 1, 5, '2025-07-10');
+
+COMMIT;
+
+-- Garantia de atomicidade: ou tudo acontece, ou nada
+
+
+-- Rollback para desfazer alterações
+
+BEGIN TRANSACTION;
+
+UPDATE Produtos SET preco = 0 WHERE nome = 'Maçã';
+
+ROLLBACK;
+
+-- O preço da Maçã volta ao valor anterior
+
+
+-- Observações:
+-- Curso simulado: Operações Avançadas em SQL Server 2022
+-- Recursos aplicados: JOIN, CTE, MERGE, VIEW, CASE, SUBQUERY, TRANSACTION
+-- Projeto Frutally expandido com análises mais ricas e controle transacional
+-- Todos os testes realizados no SQL Server Management Studio (SSMS)
